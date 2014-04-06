@@ -112,6 +112,8 @@ public:
 		label_column->set_visible(false);
 		set_headers_visible(false);
 		set_size_request(-1,64);
+		get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
+		set_rubber_banding(true);
 	}
 
 	bool
@@ -169,7 +171,7 @@ public:
 					cellrenderer_time_track->property_canvas()=row[model.canvas];
 					cellrenderer_time_track->activate(event,*this,path.to_string(),rect,rect,Gtk::CellRendererState());
 					queue_draw_area(rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height());
-					return true;
+					return false;
 					//return signal_param_user_click()(event->button.button,row,COLUMNID_TIME_TRACK);
 				}
 			}
@@ -204,7 +206,7 @@ public:
 					cellrenderer_time_track->activate(event,*this,path.to_string(),rect,rect,Gtk::CellRendererState());
 					queue_draw();
 					//queue_draw_area(rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height());
-					return true;
+					return false;
 				}
 /*				else
 				if(last_tooltip_path.get_depth()<=0 || path!=last_tooltip_path)
@@ -219,7 +221,7 @@ public:
 					}
 				}
 */
-				return true;
+				return false;
 			}
 			break;
 		case GDK_BUTTON_RELEASE:
@@ -249,7 +251,7 @@ public:
 					cellrenderer_time_track->activate(event,*this,path.to_string(),rect,rect,Gtk::CellRendererState());
 					queue_draw();
 					queue_draw_area(rect.get_x(),rect.get_y(),rect.get_width(),rect.get_height());
-					return true;
+					return false;
 				}
 			}
 			break;
