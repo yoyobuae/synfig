@@ -12,6 +12,7 @@ import os
 import json
 import sys
 import logging
+import gzip
 from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
@@ -33,8 +34,8 @@ def write_to(filename, extension, data):
     new_name = filename.split(".")
     new_name[-1] = extension
     new_name = ".".join(new_name)
-    with open(new_name, "w") as fil:
-        fil.write(data)
+    with gzip.open(new_name, 'wb') as fil:
+        fil.write(bytearray(data, 'utf-8'))
     return new_name
 
 
@@ -65,7 +66,7 @@ def parse(file_name):
     gen_layers(settings.lottie_format["layers"], root, len(root) - 1)
 
     lottie_string = json.dumps(settings.lottie_format)
-    return write_to(file_name, "json", lottie_string)
+    return write_to(file_name, "tgs", lottie_string)
 
 
 def gen_html(file_name):
@@ -132,4 +133,3 @@ else:
     settings.init()
     FILE_NAME = sys.argv[1]
     new_file_name = parse(FILE_NAME)
-    gen_html(new_file_name)
