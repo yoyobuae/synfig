@@ -9,7 +9,7 @@ import ast
 from misc import Vector
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
-from properties.shapePropKeyframe.helper import append_path, update_frame_window, update_child_at_parent, insert_dict_at, update_frame_set, next_frame
+from properties.shapePropKeyframe.helper import append_path, update_frame_window, update_child_at_parent, insert_dict_at, update_frame_set, next_frame, trunc_decimals
 sys.path.append("../../")
 
 
@@ -98,12 +98,12 @@ def gen_dynamic_list_polygon(lottie, dynamic_list):
                     pos_next[i] += origin_next[i]
 
                 # Store values in dictionary
-                st_val["i"].append(tangent1_cur.get_list())
-                st_val["o"].append(tangent2_cur.get_list())
-                st_val["v"].append(pos_cur)
-                en_val["i"].append(tangent1_next.get_list())
-                en_val["o"].append(tangent2_next.get_list())
-                en_val["v"].append(pos_next)
+                st_val["i"].append(trunc_decimals(tangent1_cur.get_list()))
+                st_val["o"].append(trunc_decimals(tangent2_cur.get_list()))
+                st_val["v"].append(trunc_decimals(pos_cur))
+                en_val["i"].append(trunc_decimals(tangent1_next.get_list()))
+                en_val["o"].append(trunc_decimals(tangent2_next.get_list()))
+                en_val["v"].append(trunc_decimals(pos_next))
         fr += 1
     # Setting the final time
     lottie.append({})

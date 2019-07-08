@@ -129,6 +129,12 @@ def next_frame(start, window, frames):
     return window["last"]
 
 
+def trunc_decimals(obj):
+    if type(obj) is list and len(obj) is 2 and type(obj[0]) is float and type(obj[1]) is float:
+        return [round(obj[0], 0), round(obj[1], 0)]
+    return obj
+
+
 def update_child_at_parent(parent, new_child, tag, param_name=None):
     """
     Given a node, replaces the child with tag `tag` with new_child
@@ -259,12 +265,12 @@ def cubic_to(vec, tan1, tan2, lottie, origin_cur):
     tan1 *= settings.PIX_PER_UNIT
     tan2 *= settings.PIX_PER_UNIT
     tan1, tan2 = convert_tangent_to_lottie(3*tan1, 3*tan2)
-    lottie["i"].append(tan1.get_list())
-    lottie["o"].append(tan2.get_list())
+    lottie["i"].append(trunc_decimals(tan1.get_list()))
+    lottie["o"].append(trunc_decimals(tan2.get_list()))
     pos = change_axis(vec[0], vec[1])
     for i in range(len(pos)):
         pos[i] += origin_cur[i]
-    lottie["v"].append(pos)
+    lottie["v"].append(trunc_decimals(pos))
 
 
 def move_to(vec, lottie, origin_cur):
@@ -285,7 +291,7 @@ def move_to(vec, lottie, origin_cur):
     pos = change_axis(vec[0], vec[1])
     for i in range(len(pos)):
         pos[i] += origin_cur[i]
-    lottie["v"].append(pos)
+    lottie["v"].append(trunc_decimals(pos))
 
 
 def convert_tangent_to_lottie(t1, t2):

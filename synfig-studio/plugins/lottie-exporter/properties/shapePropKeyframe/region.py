@@ -8,7 +8,7 @@ import sys
 import ast
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
-from properties.shapePropKeyframe.helper import insert_dict_at, update_frame_window, update_child_at_parent, append_path, animate_radial_composite, get_tangent_at_frame, convert_tangent_to_lottie, update_frame_set, next_frame
+from properties.shapePropKeyframe.helper import insert_dict_at, update_frame_window, update_child_at_parent, append_path, animate_radial_composite, get_tangent_at_frame, convert_tangent_to_lottie, update_frame_set, next_frame, trunc_decimals
 sys.path.append("../../")
 
 
@@ -142,12 +142,12 @@ def gen_bline_region(lottie, bline_point):
                     pos_next[i] += origin_next[i]
 
                 # Store values in dictionary
-                st_val["i"].append(tangent1_cur.get_list())
-                st_val["o"].append(tangent2_cur.get_list())
-                st_val["v"].append(pos_cur)
-                en_val["i"].append(tangent1_next.get_list())
-                en_val["o"].append(tangent2_next.get_list())
-                en_val["v"].append(pos_next)
+                st_val["i"].append(trunc_decimals(tangent1_cur.get_list()))
+                st_val["o"].append(trunc_decimals(tangent2_cur.get_list()))
+                st_val["v"].append(trunc_decimals(pos_cur))
+                en_val["i"].append(trunc_decimals(tangent1_next.get_list()))
+                en_val["o"].append(trunc_decimals(tangent2_next.get_list()))
+                en_val["v"].append(trunc_decimals(pos_next))
         fr += 1
     # Setting final time
     lottie.append({})
