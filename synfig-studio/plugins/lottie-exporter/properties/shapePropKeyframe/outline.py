@@ -11,7 +11,7 @@ from misc import Vector, Hermite
 from synfig.animation import to_Synfig_axis, get_vector_at_frame, get_bool_at_frame, gen_dummy_waypoint
 from properties.valueKeyframed import gen_value_Keyframed
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
-from properties.shapePropKeyframe.helper import add_reverse, add, move_to, get_tangent_at_frame, insert_dict_at, animate_radial_composite, append_path, update_child_at_parent, update_frame_window
+from properties.shapePropKeyframe.helper import add_reverse, add, move_to, get_tangent_at_frame, insert_dict_at, animate_radial_composite, append_path, update_child_at_parent, update_frame_window, update_frame_set, next_frame
 sys.path.append("../../")
 
 
@@ -37,6 +37,7 @@ def gen_bline_outline(lottie, bline_point):
     window = {}
     window["first"] = sys.maxsize
     window["last"] = -1
+    frames = set()
 
     for entry in bline_point:
         composite = entry[0]
@@ -57,6 +58,7 @@ def gen_bline_outline(lottie, bline_point):
         # Necassary to update this before inserting new waypoints, as new
         # waypoints might include there on time: 0 seconds
         update_frame_window(pos[0], window)
+        update_frame_set(pos[0], frames)
 
         # Empty the pos and fill in the new animated pos
         pos = gen_dummy_waypoint(pos, "point", "vector")
@@ -64,22 +66,25 @@ def gen_bline_outline(lottie, bline_point):
 
         # Empty the width and fill in the new animated width
         update_frame_window(width[0], window)
+        update_frame_set(width[0], frames)
         width = gen_dummy_waypoint(width, "width", "real")
         update_child_at_parent(composite, width, "width")
 
         update_frame_window(split_r[0], window)
+        update_frame_set(split_r[0], frames)
         split_r = gen_dummy_waypoint(split_r, "split_radius", "bool")
         update_child_at_parent(composite, split_r, "split_radius")
 
         update_frame_window(split_a[0], window)
+        update_frame_set(split_a[0], frames)
         split_a = gen_dummy_waypoint(split_a, "split_angle", "bool")
         update_child_at_parent(composite, split_a, "split_angle")
 
         append_path(pos[0], composite, "point_path", "vector")
         append_path(width[0], composite, "width_path")
 
-        animate_radial_composite(t1[0], window)
-        animate_radial_composite(t2[0], window)
+        animate_radial_composite(t1[0], window, frames)
+        animate_radial_composite(t2[0], window, frames)
 
 
     layer = bline_point.getparent().getparent()
@@ -102,6 +107,7 @@ def gen_bline_outline(lottie, bline_point):
 
     # Animating the origin
     update_frame_window(origin[0], window)
+    update_frame_set(origin[0], frames)
     origin_parent = origin.getparent()
     origin = gen_dummy_waypoint(origin, "param", "vector")
     origin.attrib["name"] = "origin"
@@ -112,6 +118,7 @@ def gen_bline_outline(lottie, bline_point):
     gen_properties_multi_dimensional_keyframed(origin_dict, origin[0], 0)
 
     update_frame_window(outer_width[0], window)
+    update_frame_set(outer_width[0], frames)
     outer_width = gen_dummy_waypoint(outer_width, "param", "real")
     outer_width.attrib["name"] = "width"
     # Update the layer with this animated outline width
@@ -124,6 +131,7 @@ def gen_bline_outline(lottie, bline_point):
 
     # Animating the sharp_cusps
     update_frame_window(sharp_cusps[0], window)
+    update_frame_set(sharp_cusps[0], frames)
     sharp_cusps = gen_dummy_waypoint(sharp_cusps, "param", "bool")
     sharp_cusps.attrib["name"] = "sharp_cusps"
 
@@ -131,6 +139,7 @@ def gen_bline_outline(lottie, bline_point):
     update_child_at_parent(layer, sharp_cusps, "param", "sharp_cusps")
 
     update_frame_window(expand[0], window)
+    update_frame_set(expand[0], frames)
     expand = gen_dummy_waypoint(expand, "param", "real")
     expand.attrib["name"] = "expand"
     update_child_at_parent(layer, expand, "param", "expand")
@@ -138,16 +147,19 @@ def gen_bline_outline(lottie, bline_point):
     gen_value_Keyframed(expand_dict, expand[0], 0)
 
     update_frame_window(r_tip0[0], window)
+    update_frame_set(r_tip0[0], frames)
     r_tip0 = gen_dummy_waypoint(r_tip0, "param", "bool")
     r_tip0.attrib["name"] = "round_tip[0]"
     update_child_at_parent(layer, r_tip0, "param", "round_tip[0]")
 
     update_frame_window(r_tip1[0], window)
+    update_frame_set(r_tip1[0], frames)
     r_tip1 = gen_dummy_waypoint(r_tip1, "param", "bool")
     r_tip1.attrib["name"] = "round_tip[1]"
     update_child_at_parent(layer, r_tip1, "param", "round_tip[1]")
 
     update_frame_window(homo_width[0], window)
+    update_frame_set(homo_width[0], frames)
     homo_width = gen_dummy_waypoint(homo_width, "param", "bool")
     homo_width.attrib["name"] = "homogeneous_width"
     update_child_at_parent(layer, homo_width, "param", "homogeneous_width")
@@ -155,6 +167,7 @@ def gen_bline_outline(lottie, bline_point):
     # Minimizing the window size
     if window["first"] == sys.maxsize and window["last"] == -1:
         window["first"] = window["last"] = 0
+        frames.add(0)
     ################# END OF SECTION 1 ###################
 
     ################ SECTION 2 ###########################
@@ -163,12 +176,14 @@ def gen_bline_outline(lottie, bline_point):
 
     fr = window["first"]
     while fr <= window["last"]:
-        st_val, en_val = insert_dict_at(lottie, -1, fr, False)  # This loop needs to be considered somewhere down
+        if fr in frames:
+            nx_fr = next_frame(fr, window, frames)
+            st_val, en_val = insert_dict_at(lottie, -1, fr, False)  # This loop needs to be considered somewhere down
 
-        synfig_outline(bline_point, st_val, origin_dict, outer_width_dict, sharp_cusps,
-                       expand_dict, r_tip0, r_tip1, homo_width, fr)
-        synfig_outline(bline_point, en_val, origin_dict, outer_width_dict, sharp_cusps,
-                       expand_dict, r_tip0, r_tip1, homo_width, fr + 1)
+            synfig_outline(bline_point, st_val, origin_dict, outer_width_dict, sharp_cusps,
+                           expand_dict, r_tip0, r_tip1, homo_width, fr)
+            synfig_outline(bline_point, en_val, origin_dict, outer_width_dict, sharp_cusps,
+                           expand_dict, r_tip0, r_tip1, homo_width, nx_fr)
 
         fr += 1
     # Setting the final time

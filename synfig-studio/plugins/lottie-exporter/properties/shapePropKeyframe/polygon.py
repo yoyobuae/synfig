@@ -9,7 +9,7 @@ import ast
 from misc import Vector
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
-from properties.shapePropKeyframe.helper import append_path, update_frame_window, update_child_at_parent, insert_dict_at
+from properties.shapePropKeyframe.helper import append_path, update_frame_window, update_child_at_parent, insert_dict_at, update_frame_set, next_frame
 sys.path.append("../../")
 
 
@@ -31,10 +31,12 @@ def gen_dynamic_list_polygon(lottie, dynamic_list):
     window["first"] = sys.maxsize
     window["last"] = -1
     count = 0
+    frames = set()
 
     for entry in dynamic_list:
         pos = entry
         update_frame_window(pos[0], window)
+        update_frame_set(pos[0], frames)
 
         new_pos = gen_dummy_waypoint(pos, "entry", "vector")
         pos.getparent().remove(pos)
@@ -52,6 +54,7 @@ def gen_dynamic_list_polygon(lottie, dynamic_list):
 
     # Animating the origin
     update_frame_window(origin[0], window)
+    update_frame_set(origin[0], frames)
     origin_parent = origin.getparent()
     origin = gen_dummy_waypoint(origin, "param", "vector")
     origin.attrib["name"] = "origin"
@@ -64,40 +67,43 @@ def gen_dynamic_list_polygon(lottie, dynamic_list):
 
     if window["first"] == sys.maxsize and window["last"] == -1:
         window["first"] = window["last"] = 0
+        frames.add(0)
     ################ END OF SECTION 1 ##############
 
     ################ SECTION 2 #####################
     # Generating values for all the frames in the window
     fr = window["first"]
     while fr <= window["last"]:
-        st_val, en_val = insert_dict_at(lottie, -1, fr, False)
+        if fr in frames:
+            nx_fr = next_frame(fr, window, frames)
+            st_val, en_val = insert_dict_at(lottie, -1, fr, False)
 
-        for entry in dynamic_list:
-            # Only two childs, one should be animated, other one is path
-            for child in entry:
-                if child.tag == "pos_path":
-                    dictionary = ast.literal_eval(child.text)
-                    pos_cur = get_vector_at_frame(dictionary, fr)
-                    pos_next = get_vector_at_frame(dictionary, fr + 1)
+            for entry in dynamic_list:
+                # Only two childs, one should be animated, other one is path
+                for child in entry:
+                    if child.tag == "pos_path":
+                        dictionary = ast.literal_eval(child.text)
+                        pos_cur = get_vector_at_frame(dictionary, fr)
+                        pos_next = get_vector_at_frame(dictionary, nx_fr)
 
-            tangent1_cur, tangent2_cur = Vector(0, 0), Vector(0, 0)
-            tangent1_next, tangent2_next = Vector(0, 0), Vector(0, 0)
+                tangent1_cur, tangent2_cur = Vector(0, 0), Vector(0, 0)
+                tangent1_next, tangent2_next = Vector(0, 0), Vector(0, 0)
 
-            # Adding origin to each vertex
-            origin_cur = get_vector_at_frame(origin_dict, fr)
-            origin_next = get_vector_at_frame(origin_dict, fr + 1)
-            for i in range(len(pos_cur)):
-                pos_cur[i] += origin_cur[i]
-            for i in range(len(pos_next)):
-                pos_next[i] += origin_next[i]
+                # Adding origin to each vertex
+                origin_cur = get_vector_at_frame(origin_dict, fr)
+                origin_next = get_vector_at_frame(origin_dict, nx_fr)
+                for i in range(len(pos_cur)):
+                    pos_cur[i] += origin_cur[i]
+                for i in range(len(pos_next)):
+                    pos_next[i] += origin_next[i]
 
-            # Store values in dictionary
-            st_val["i"].append(tangent1_cur.get_list())
-            st_val["o"].append(tangent2_cur.get_list())
-            st_val["v"].append(pos_cur)
-            en_val["i"].append(tangent1_next.get_list())
-            en_val["o"].append(tangent2_next.get_list())
-            en_val["v"].append(pos_next)
+                # Store values in dictionary
+                st_val["i"].append(tangent1_cur.get_list())
+                st_val["o"].append(tangent2_cur.get_list())
+                st_val["v"].append(pos_cur)
+                en_val["i"].append(tangent1_next.get_list())
+                en_val["o"].append(tangent2_next.get_list())
+                en_val["v"].append(pos_next)
         fr += 1
     # Setting the final time
     lottie.append({})

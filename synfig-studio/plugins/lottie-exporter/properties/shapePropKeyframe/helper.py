@@ -32,7 +32,7 @@ def append_path(element, parent, element_name, typ="real"):
     parent.append(element_lxml)
 
 
-def animate_radial_composite(radial_composite, window):
+def animate_radial_composite(radial_composite, window, frames):
     """
     Animates the radial composite and updates the window of frame if radial
     composite's parameters are already animated
@@ -41,6 +41,7 @@ def animate_radial_composite(radial_composite, window):
     Args:
         radial_composite (lxml.etree._Element) : Synfig format radial composite-> stores radius and angle
         window           (dict)                : max and min frame of overall animations stored in this
+        frames           (set)                 : set of frames which have waypoints
 
     Returns:
         (None)
@@ -51,7 +52,9 @@ def animate_radial_composite(radial_composite, window):
         elif child.tag == "theta":
             theta = child
     update_frame_window(radius[0], window)
+    update_frame_set(radius[0], frames)
     update_frame_window(theta[0], window)
+    update_frame_set(theta[0], frames)
 
     radius = gen_dummy_waypoint(radius, "radius", "real")
     theta = gen_dummy_waypoint(theta, "theta", "region_angle")
@@ -83,6 +86,47 @@ def update_frame_window(node, window):
                 window["last"] = fr
             if fr < window["first"]:
                 window["first"] = fr
+
+
+def update_frame_set(node, frames):
+    """
+    Given an animation, adds the frames waypoints are located into the given set
+
+    Args:
+        node    (lxml.etree._Element) : Animation to be searched in
+        frames  (set)                 : set of frames which contain waypoints
+
+    Returns:
+        (None)
+    """
+    if is_animated(node) == 2:
+        for waypoint in node:
+            fr = get_frame(waypoint)
+            frames.add(fr);
+
+
+def next_frame(start, window, frames):
+    """
+    Given a starting frame, finds the next frame in set within the given window
+
+    Args:
+        start   (number) : Start frame
+        window  (dict)   : max and min frame window
+        frames  (set)    : set of frames
+
+    Returns:
+        (None)
+    """
+    fr = start + 1
+    if fr < window["first"]:
+        fr = window["first"]
+    if fr > window["last"]:
+        fr = window["last"]
+    while fr <= window["last"]:
+        if fr in frames:
+            return fr
+        fr += 1
+    return window["last"]
 
 
 def update_child_at_parent(parent, new_child, tag, param_name=None):

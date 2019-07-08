@@ -8,7 +8,7 @@ import sys
 import ast
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
-from properties.shapePropKeyframe.helper import insert_dict_at, update_frame_window, update_child_at_parent, append_path, animate_radial_composite, get_tangent_at_frame, convert_tangent_to_lottie
+from properties.shapePropKeyframe.helper import insert_dict_at, update_frame_window, update_child_at_parent, append_path, animate_radial_composite, get_tangent_at_frame, convert_tangent_to_lottie, update_frame_set, next_frame
 sys.path.append("../../")
 
 
@@ -31,6 +31,7 @@ def gen_bline_region(lottie, bline_point):
     window = {}
     window["first"] = sys.maxsize
     window["last"] = -1
+    frames = set()
 
     loop = False
     if "loop" in bline_point.keys():
@@ -57,23 +58,26 @@ def gen_bline_region(lottie, bline_point):
         # Necassary to update this before inserting new waypoints, as new
         # waypoints might include there on time: 0 seconds
         update_frame_window(pos[0], window)
+        update_frame_set(pos[0], frames)
 
         # Empty the pos and fill in the new animated pos
         pos = gen_dummy_waypoint(pos, "point", "vector")
         update_child_at_parent(composite, pos, "point")
 
         update_frame_window(split_r[0], window)
+        update_frame_set(split_r[0], frames)
         split_r = gen_dummy_waypoint(split_r, "split_radius", "bool")
         update_child_at_parent(composite, split_r, "split_radius")
 
         update_frame_window(split_a[0], window)
+        update_frame_set(split_a[0], frames)
         split_a = gen_dummy_waypoint(split_a, "split_angle", "bool")
         update_child_at_parent(composite, split_a, "split_angle")
 
         append_path(pos[0], composite, "point_path", "vector")
 
-        animate_radial_composite(t1[0], window)
-        animate_radial_composite(t2[0], window)
+        animate_radial_composite(t1[0], window, frames)
+        animate_radial_composite(t2[0], window, frames)
 
     layer = bline_point.getparent().getparent()
     for chld in layer:
@@ -82,6 +86,7 @@ def gen_bline_region(lottie, bline_point):
 
     # Animating the origin
     update_frame_window(origin[0], window)
+    update_frame_set(origin[0], frames)
     origin_parent = origin.getparent()
     origin = gen_dummy_waypoint(origin, "param", "vector")
     origin.attrib["name"] = "origin"
@@ -95,51 +100,54 @@ def gen_bline_region(lottie, bline_point):
     # Minimizing the window size
     if window["first"] == sys.maxsize and window["last"] == -1:
         window["first"] = window["last"] = 0
+        frames.add(0)
     ################# END OF SECTION 1 ###################
 
     ################ SECTION 2 ###########################
     # Generating values for all the frames in the window
     fr = window["first"]
     while fr <= window["last"]:
-        st_val, en_val = insert_dict_at(lottie, -1, fr, loop)
+        if fr in frames:
+            nx_fr = next_frame(fr, window, frames)
+            st_val, en_val = insert_dict_at(lottie, -1, fr, loop)
 
-        for entry in bline_point:
-            composite = entry[0]
-            for child in composite:
-                if child.tag == "point_path":
-                    dictionary = ast.literal_eval(child.text)
-                    pos_cur = get_vector_at_frame(dictionary, fr)
-                    pos_next = get_vector_at_frame(dictionary, fr + 1)
-                elif child.tag == "t1":
-                    t1 = child[0]
-                elif child.tag == "t2":
-                    t2 = child[0]
-                elif child.tag == "split_radius":
-                    split_r = child
-                elif child.tag == "split_angle":
-                    split_a = child
+            for entry in bline_point:
+                composite = entry[0]
+                for child in composite:
+                    if child.tag == "point_path":
+                        dictionary = ast.literal_eval(child.text)
+                        pos_cur = get_vector_at_frame(dictionary, fr)
+                        pos_next = get_vector_at_frame(dictionary, nx_fr)
+                    elif child.tag == "t1":
+                        t1 = child[0]
+                    elif child.tag == "t2":
+                        t2 = child[0]
+                    elif child.tag == "split_radius":
+                        split_r = child
+                    elif child.tag == "split_angle":
+                        split_a = child
 
-            tangent1_cur, tangent2_cur = get_tangent_at_frame(t1, t2, split_r, split_a, fr)
-            tangent1_next, tangent2_next = get_tangent_at_frame(t1, t2, split_r, split_a, fr)
+                tangent1_cur, tangent2_cur = get_tangent_at_frame(t1, t2, split_r, split_a, fr)
+                tangent1_next, tangent2_next = get_tangent_at_frame(t1, t2, split_r, split_a, nx_fr)
 
-            tangent1_cur, tangent2_cur = convert_tangent_to_lottie(tangent1_cur, tangent2_cur)
-            tangent1_next, tangent2_next = convert_tangent_to_lottie(tangent1_next, tangent2_next)
+                tangent1_cur, tangent2_cur = convert_tangent_to_lottie(tangent1_cur, tangent2_cur)
+                tangent1_next, tangent2_next = convert_tangent_to_lottie(tangent1_next, tangent2_next)
 
-            # Adding origin to each vertex
-            origin_cur = get_vector_at_frame(origin_dict, fr)
-            origin_next = get_vector_at_frame(origin_dict, fr + 1)
-            for i in range(len(pos_cur)):
-                pos_cur[i] += origin_cur[i]
-            for i in range(len(pos_next)):
-                pos_next[i] += origin_next[i]
+                # Adding origin to each vertex
+                origin_cur = get_vector_at_frame(origin_dict, fr)
+                origin_next = get_vector_at_frame(origin_dict, nx_fr)
+                for i in range(len(pos_cur)):
+                    pos_cur[i] += origin_cur[i]
+                for i in range(len(pos_next)):
+                    pos_next[i] += origin_next[i]
 
-            # Store values in dictionary
-            st_val["i"].append(tangent1_cur.get_list())
-            st_val["o"].append(tangent2_cur.get_list())
-            st_val["v"].append(pos_cur)
-            en_val["i"].append(tangent1_next.get_list())
-            en_val["o"].append(tangent2_next.get_list())
-            en_val["v"].append(pos_next)
+                # Store values in dictionary
+                st_val["i"].append(tangent1_cur.get_list())
+                st_val["o"].append(tangent2_cur.get_list())
+                st_val["v"].append(pos_cur)
+                en_val["i"].append(tangent1_next.get_list())
+                en_val["o"].append(tangent2_next.get_list())
+                en_val["v"].append(pos_next)
         fr += 1
     # Setting final time
     lottie.append({})
