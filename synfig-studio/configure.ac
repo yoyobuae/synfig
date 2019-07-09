@@ -211,6 +211,9 @@ AC_CONFIG_FILES([
     plugins/lottie-exporter/shapes/Makefile
     plugins/lottie-exporter/sources/Makefile
     plugins/lottie-exporter/synfig/Makefile
+    plugins/tgs-exporter/Makefile
+    plugins/tgs-exporter/properties/Makefile
+    plugins/tgs-exporter/properties/shapePropKeyframe/Makefile
     sounds/Makefile
 ])
 AC_OUTPUT
