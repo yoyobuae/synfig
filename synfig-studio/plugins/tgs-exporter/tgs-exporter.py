@@ -8,7 +8,6 @@ import os
 import sys
 import gzip
 import shutil
-from pathlib import Path
 
 sys.path.insert(1, os.path.join(sys.path[0], '..', 'lottie-exporter'))
 
