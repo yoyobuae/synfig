@@ -32,7 +32,7 @@ def append_path(element, parent, element_name, typ="real"):
     parent.append(element_lxml)
 
 
-def animate_radial_composite(radial_composite, window, frames):
+def animate_radial_composite(radial_composite, window):
     """
     Animates the radial composite and updates the window of frame if radial
     composite's parameters are already animated
@@ -41,7 +41,6 @@ def animate_radial_composite(radial_composite, window, frames):
     Args:
         radial_composite (lxml.etree._Element) : Synfig format radial composite-> stores radius and angle
         window           (dict)                : max and min frame of overall animations stored in this
-        frames           (set)                 : set of frames which have waypoints
 
     Returns:
         (None)
@@ -52,9 +51,7 @@ def animate_radial_composite(radial_composite, window, frames):
         elif child.tag == "theta":
             theta = child
     update_frame_window(radius[0], window)
-    update_frame_set(radius[0], frames)
     update_frame_window(theta[0], window)
-    update_frame_set(theta[0], frames)
 
     radius = gen_dummy_waypoint(radius, "radius", "real")
     theta = gen_dummy_waypoint(theta, "theta", "region_angle")
@@ -86,53 +83,6 @@ def update_frame_window(node, window):
                 window["last"] = fr
             if fr < window["first"]:
                 window["first"] = fr
-
-
-def update_frame_set(node, frames):
-    """
-    Given an animation, adds the frames waypoints are located into the given set
-
-    Args:
-        node    (lxml.etree._Element) : Animation to be searched in
-        frames  (set)                 : set of frames which contain waypoints
-
-    Returns:
-        (None)
-    """
-    if is_animated(node) == 2:
-        for waypoint in node:
-            fr = get_frame(waypoint)
-            frames.add(fr);
-
-
-def next_frame(start, window, frames):
-    """
-    Given a starting frame, finds the next frame in set within the given window
-
-    Args:
-        start   (number) : Start frame
-        window  (dict)   : max and min frame window
-        frames  (set)    : set of frames
-
-    Returns:
-        (None)
-    """
-    fr = start + 1
-    if fr < window["first"]:
-        fr = window["first"]
-    if fr > window["last"]:
-        fr = window["last"]
-    while fr <= window["last"]:
-        if fr in frames:
-            return fr
-        fr += 1
-    return window["last"]
-
-
-def trunc_decimals(obj):
-    if type(obj) is list and len(obj) is 2 and type(obj[0]) is float and type(obj[1]) is float:
-        return [round(obj[0], 0), round(obj[1], 0)]
-    return obj
 
 
 def update_child_at_parent(parent, new_child, tag, param_name=None):
@@ -265,12 +215,12 @@ def cubic_to(vec, tan1, tan2, lottie, origin_cur):
     tan1 *= settings.PIX_PER_UNIT
     tan2 *= settings.PIX_PER_UNIT
     tan1, tan2 = convert_tangent_to_lottie(3*tan1, 3*tan2)
-    lottie["i"].append(trunc_decimals(tan1.get_list()))
-    lottie["o"].append(trunc_decimals(tan2.get_list()))
+    lottie["i"].append(tan1.get_list())
+    lottie["o"].append(tan2.get_list())
     pos = change_axis(vec[0], vec[1])
     for i in range(len(pos)):
         pos[i] += origin_cur[i]
-    lottie["v"].append(trunc_decimals(pos))
+    lottie["v"].append(pos)
 
 
 def move_to(vec, lottie, origin_cur):
@@ -291,7 +241,7 @@ def move_to(vec, lottie, origin_cur):
     pos = change_axis(vec[0], vec[1])
     for i in range(len(pos)):
         pos[i] += origin_cur[i]
-    lottie["v"].append(trunc_decimals(pos))
+    lottie["v"].append(pos)
 
 
 def convert_tangent_to_lottie(t1, t2):
