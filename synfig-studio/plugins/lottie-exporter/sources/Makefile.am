@@ -3,6 +3,7 @@
 PLUGIN_NAME = sources
 
 EXTRA_FILES = \
+			  __init__.py \
 			  image.py \
 			  precomp.py
 

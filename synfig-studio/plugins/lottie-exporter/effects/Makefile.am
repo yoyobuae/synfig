@@ -3,6 +3,7 @@
 PLUGIN_NAME = effects
 
 EXTRA_FILES = \
+			  __init__.py \
 			  allmask.py \
 			  color.py \
 			  feather.py \

@@ -3,6 +3,7 @@
 PLUGIN_NAME = synfig
 
 EXTRA_FILES = \
+			  __init__.py \
 			  animation.py \
 			  group.py
 

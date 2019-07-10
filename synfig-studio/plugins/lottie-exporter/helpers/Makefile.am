@@ -3,6 +3,7 @@
 PLUGIN_NAME = helpers
 
 EXTRA_FILES = \
+			  __init__.py \
 			  transform.py \
 			  bezier.py \
 			  blendMode.py \

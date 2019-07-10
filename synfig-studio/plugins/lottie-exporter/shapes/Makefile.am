@@ -3,6 +3,7 @@
 PLUGIN_NAME = shapes
 
 EXTRA_FILES = \
+			  __init__.py \
 			  star.py \
 			  circle.py \
 			  rectangle.py \

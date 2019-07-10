@@ -3,6 +3,7 @@
 PLUGIN_NAME = properties
 
 EXTRA_FILES = \
+			  __init__.py \
 			  multiDimensionalKeyframed.py \
 			  offsetKeyframe.py \
 			  shapeKeyframed.py \

@@ -3,6 +3,7 @@
 PLUGIN_NAME = layers
 
 EXTRA_FILES = \
+			  __init__.py \
 			  driver.py \
 			  image.py \
 			  preComp.py \
