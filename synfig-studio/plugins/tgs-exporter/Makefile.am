@@ -15,5 +15,3 @@ EXTRA_DIST = \
 
 MAINTAINERCLEANFILES = Makefile.in
 DISTCLEANFILES = plugin.xml
-
-SUBDIRS = properties
