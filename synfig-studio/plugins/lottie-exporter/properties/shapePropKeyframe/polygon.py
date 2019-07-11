@@ -5,7 +5,7 @@ in Lottie format
 """
 
 import sys
-import ast
+import dumb_store
 from misc import Vector
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
@@ -82,7 +82,7 @@ def gen_dynamic_list_polygon(lottie, dynamic_list):
                 # Only two childs, one should be animated, other one is path
                 for child in entry:
                     if child.tag == "pos_path":
-                        dictionary = ast.literal_eval(child.text)
+                        dictionary = dumb_store.get(child.text)
                         pos_cur = get_vector_at_frame(dictionary, fr)
                         pos_next = get_vector_at_frame(dictionary, nx_fr)
 

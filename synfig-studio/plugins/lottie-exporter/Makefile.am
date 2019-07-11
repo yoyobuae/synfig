@@ -4,7 +4,8 @@ PLUGIN_NAME = lottie-exporter
 
 EXTRA_FILES = canvas.py \
 			  misc.py \
-			  settings.py
+			  settings.py \
+			  dumb_store.py
 
 plugindir = ${datadir}/synfig/plugins/$(PLUGIN_NAME)
 plugin_DATA = \

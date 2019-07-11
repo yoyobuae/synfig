@@ -5,7 +5,7 @@ in Lottie format
 """
 
 import sys
-import ast
+import dumb_store
 from lxml import etree
 import settings
 from misc import change_axis, get_frame, Vector, is_animated, radial_to_tangent
@@ -28,7 +28,7 @@ def append_path(element, parent, element_name, typ="real"):
         gen_properties_multi_dimensional_keyframed(element_dict, element, 0)
     # Store in lxml element
     element_lxml = etree.Element(element_name)
-    element_lxml.text = str(element_dict)
+    element_lxml.text = dumb_store.put(element_dict)
     parent.append(element_lxml)
 
 
@@ -181,10 +181,10 @@ def get_tangent_at_frame(t1, t2, split_r, split_a, fr):
     # Setting tangent 1
     for chld in t1:
         if chld.tag == "radius_path":
-            dictionary = ast.literal_eval(chld.text)
+            dictionary = dumb_store.get(chld.text)
             r1 = get_vector_at_frame(dictionary, fr)
         elif chld.tag == "theta_path":
-            dictionary = ast.literal_eval(chld.text)
+            dictionary = dumb_store.get(chld.text)
             a1 = get_vector_at_frame(dictionary, fr)
     x, y = radial_to_tangent(r1, a1)
     tangent1 = Vector(x, y)
@@ -192,13 +192,13 @@ def get_tangent_at_frame(t1, t2, split_r, split_a, fr):
     # Setting tangent 2
     for chld in t2:
         if chld.tag == "radius_path":
-            dictionary = ast.literal_eval(chld.text)
+            dictionary = dumb_store.get(chld.text)
             r2 = get_vector_at_frame(dictionary, fr)
             if not sp_r:
                 # Use t1's radius
                 r2 = r1
         elif chld.tag == "theta_path":
-            dictionary = ast.literal_eval(chld.text)
+            dictionary = dumb_store.get(chld.text)
             a2 = get_vector_at_frame(dictionary, fr)
             if not sp_a:
                 # Use t1's angle

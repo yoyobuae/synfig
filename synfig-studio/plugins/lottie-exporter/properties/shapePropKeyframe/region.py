@@ -5,7 +5,7 @@ in Lottie format
 """
 
 import sys
-import ast
+import dumb_store
 from synfig.animation import get_vector_at_frame, gen_dummy_waypoint
 from properties.multiDimensionalKeyframed import gen_properties_multi_dimensional_keyframed
 from properties.shapePropKeyframe.helper import insert_dict_at, update_frame_window, update_child_at_parent, append_path, animate_radial_composite, get_tangent_at_frame, convert_tangent_to_lottie, update_frame_set, next_frame, trunc_decimals
@@ -115,7 +115,7 @@ def gen_bline_region(lottie, bline_point):
                 composite = entry[0]
                 for child in composite:
                     if child.tag == "point_path":
-                        dictionary = ast.literal_eval(child.text)
+                        dictionary = dumb_store.get(child.text)
                         pos_cur = get_vector_at_frame(dictionary, fr)
                         pos_next = get_vector_at_frame(dictionary, nx_fr)
                     elif child.tag == "t1":

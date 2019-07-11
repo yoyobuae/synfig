@@ -5,8 +5,8 @@ in Lottie format
 """
 
 import sys
-import ast
 import math
+import dumb_store
 import settings
 from misc import Vector, Hermite
 from synfig.animation import to_Synfig_axis, get_vector_at_frame, get_bool_at_frame, gen_dummy_waypoint
@@ -203,7 +203,7 @@ def get_outline_grow(fr):
         else:
             for chld in og:
                 if chld.tag == "outline_grow_path":
-                    dictionary = ast.literal_eval(chld.text)
+                    dictionary = dumb_store.get(chld.text)
                     val = to_Synfig_axis(get_vector_at_frame(dictionary, fr), "real")
             ret += val
     ret = math.e ** ret
@@ -229,10 +229,10 @@ def get_outline_param_at_frame(composite, fr):
     """
     for child in composite:
         if child.tag == "point_path":
-            dictionary = ast.literal_eval(child.text)
+            dictionary = dumb_store.get(child.text)
             pos = get_vector_at_frame(dictionary, fr)
         elif child.tag == "width_path":
-            dictionary = ast.literal_eval(child.text)
+            dictionary = dumb_store.get(child.text)
             width = to_Synfig_axis(get_vector_at_frame(dictionary, fr), "real")
         elif child.tag == "t1":
             t1 = child[0]

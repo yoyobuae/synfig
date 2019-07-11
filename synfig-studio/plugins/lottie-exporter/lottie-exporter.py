@@ -16,6 +16,7 @@ from lxml import etree
 from canvas import gen_canvas
 from layers.driver import gen_layers
 import settings
+import dumb_store
 
 
 def write_to(filename, extension, data):
@@ -130,6 +131,7 @@ if len(sys.argv) < 2:
     sys.exit()
 else:
     settings.init()
+    dumb_store.init()
     FILE_NAME = sys.argv[1]
     new_file_name = parse(FILE_NAME)
     gen_html(new_file_name)
