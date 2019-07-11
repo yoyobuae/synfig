@@ -5,6 +5,7 @@ PLUGIN_NAME = layers
 EXTRA_FILES = \
 			  __init__.py \
 			  driver.py \
+			  group.py \
 			  image.py \
 			  preComp.py \
 			  rotate_layer.py \

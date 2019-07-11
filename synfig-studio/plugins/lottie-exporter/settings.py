@@ -79,3 +79,5 @@ def init():
     file_name = {}
     global num_precomp
     num_precomp = Count()
+    global OUTLINE_GROW     # outline grow param of group layer
+    OUTLINE_GROW = [0]
