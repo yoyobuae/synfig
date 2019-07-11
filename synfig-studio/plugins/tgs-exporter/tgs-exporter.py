@@ -27,5 +27,7 @@ if len(sys.argv) < 2:
 else:
     settings.init()
     FILE_NAME = sys.argv[1]
-    new_file_name = parse(FILE_NAME)
+    new_file_name = FILE_NAME.split(".")
+    new_file_name[-1] = "json"
+    new_file_name = ".".join(new_file_name)
     GenerateSticker(new_file_name)
